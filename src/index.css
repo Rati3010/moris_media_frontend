@@ -1,0 +1,41 @@
+:root {
+  --background-color: #f5f5f5;
+  --primary-color: #ff0000;
+  --secondary-color: #00ff00;
+  --text-color: #000000;
+  --font-size: 16px;
+}
+
+.header {
+  display: flex;
+  padding: 10px 30px;
+  gap: 10px;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  font-size: var(--font-size);
+}
+
+.footer {
+  padding: 10px 30px;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  font-size: var(--font-size);
+}
+
+.sidebar {
+  width: 30%;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: var(--font-size);
+}
+
+.container {
+  width: 80%;
+  padding: 20px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: var(--font-size);
+}
+.settings{
+  margin: auto;
+}
