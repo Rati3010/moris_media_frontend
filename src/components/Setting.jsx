@@ -4,27 +4,29 @@ import axios from "axios";
 
 const Settings = () => {
   const userId = JSON.parse(localStorage.getItem("userId"));
+  const [updateEffect, setUpdateEffect] = useState(false);
+
   const [themeConfig, setThemeConfig] = useState({
-    backgroundColor: "",
-    primaryColor: "",
-    secondaryColor: "",
-    textColor: "",
-    fontSize: "",
+    backgroundColor: "#f5f5f5",
+    primaryColor: "#ff0000",
+    secondaryColor: "#00ff00",
+    textColor: "#000000",
+    fontSize: "16",
   });
 
   useEffect(() => {
     if (userId) {
-      axios.get(`${url}/setting/:${userId}`).then((res) => {
+      axios.get(`${url}/setting/${userId}`).then((res) => {
         setThemeConfig(res.data);
+        setUpdateEffect(false)
       });
     } else {
       console.log("Got some error");
     }
-  }, []);
+  }, [updateEffect,userId]);
 
   useEffect(() => {
     const root = document.documentElement;
-    console.log(themeConfig.backgroundColor)
     root.style.setProperty("--background-color", themeConfig.backgroundColor);
     root.style.setProperty("--primary-color", themeConfig.primaryColor);
     root.style.setProperty("--secondary-color", themeConfig.secondaryColor);
@@ -39,13 +41,12 @@ const Settings = () => {
   ]);
   const handleThemeConfig = async (event) =>{
     const { name, value } = event.target;
-    console.log(name,value)
-    setThemeConfig((prevConfig) => ({
-      ...prevConfig,
+    const updatedConfig = {
+      ...themeConfig,
       [name]: value,
-    }));
-    await axios.put(`${url}/setting/:${userId}`,themeConfig).then((res)=>{
-      // console.log(res.data)
+    };
+    await axios.put(`${url}/setting/${userId}`,updatedConfig).then((res)=>{
+      setUpdateEffect(true);
     })
   }
   return (
