@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { url } from "../url";
 import axios from "axios";
+import io from "socket.io-client";
+
+const socket = io(url);
 
 const Settings = () => {
   const userId = JSON.parse(localStorage.getItem("userId"));
@@ -13,7 +16,14 @@ const Settings = () => {
     textColor: "#000000",
     fontSize: "16",
   });
-
+  useEffect(() => {
+    socket.on("themeConfigUpdate", (updatedConfig) => {
+      setThemeConfig(updatedConfig);
+    });
+    return () => {
+      socket.off("themeConfigUpdate");
+    };
+  }, []);
   useEffect(() => {
     if (userId) {
       axios.get(`${url}/setting/${userId}`).then((res) => {
@@ -47,7 +57,8 @@ const Settings = () => {
     };
     await axios.put(`${url}/setting/${userId}`,updatedConfig).then((res)=>{
       setUpdateEffect(true);
-    })
+    });
+    socket.emit("updateThemeConfig", { userId, updatedConfig });
   }
   return (
     <div className="settings">
