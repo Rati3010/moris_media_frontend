@@ -3,7 +3,12 @@ import { url } from "../url";
 import axios from "axios";
 import io from "socket.io-client";
 
-const socket = io(url);
+const socket = io(url, {
+  withCredentials: true,
+  extraHeaders: {
+    "my-custom-header": "abcd"
+  }
+});
 
 const Settings = () => {
   const userId = JSON.parse(localStorage.getItem("userId"));
@@ -17,8 +22,33 @@ const Settings = () => {
     fontSize: "16",
   });
   useEffect(() => {
+    fetchThemeConfig();
+    if (userId) {
+      socket.emit("joinRoom", userId);
+    }
+    return () => {
+      if (userId) {
+        socket.emit("leaveRoom", userId);
+      }
+    };
+  }, [userId]);
+  const fetchThemeConfig = async () => {
+    try {
+      if (userId) {
+        const response = await axios.get(`${url}/setting/${userId}`);
+        setThemeConfig(response.data);
+      } else {
+        console.log("User not logged in");
+      }
+    } catch (error) {
+      console.error("Error fetching theme configuration:", error);
+    }
+  };
+  useEffect(() => {
     socket.on("themeConfigUpdate", (updatedConfig) => {
-      setThemeConfig(updatedConfig);
+      if(userId === updatedConfig.userID){
+        setThemeConfig(updatedConfig);  
+      }
     });
     return () => {
       socket.off("themeConfigUpdate");
@@ -33,7 +63,7 @@ const Settings = () => {
     } else {
       console.log("Got some error");
     }
-  }, [updateEffect,userId]);
+  }, [updateEffect, userId]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -49,13 +79,13 @@ const Settings = () => {
     themeConfig.textColor,
     themeConfig.fontSize,
   ]);
-  const handleThemeConfig = async (event) =>{
+  const handleThemeConfig = async (event) => {
     const { name, value } = event.target;
     const updatedConfig = {
       ...themeConfig,
       [name]: value,
     };
-    await axios.put(`${url}/setting/${userId}`,updatedConfig).then((res)=>{
+    await axios.put(`${url}/setting/${userId}`, updatedConfig).then((res) => {
       setUpdateEffect(true);
     });
     socket.emit("updateThemeConfig", { userId, updatedConfig });
